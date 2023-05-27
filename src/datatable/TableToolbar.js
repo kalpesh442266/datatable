@@ -17,6 +17,10 @@ TableToolbar.propTypes = {
 export default function TableToolbar({ headLabel, handleSort, filter }) {
   const theme = useTheme();
 
+  const createSortHandler = (property) => (event) => {
+    handleSort(event, property);
+  };
+
   return (
     <TableHead sx={{ position: "sticky", top: 0, zIndex: 1 }}>
       <TableRow sx={{ backgroundColor: theme.palette.grey[200] }}>
@@ -28,8 +32,10 @@ export default function TableToolbar({ headLabel, handleSort, filter }) {
             {headCell.sort ? (
               <TableSortLabel
                 active
-                direction={filter?.order}
-                onClick={() => handleSort(headCell.id, headLabel.key)}
+                direction={
+                  filter?.sortBy === headCell.id ? filter.order : "desc"
+                }
+                onClick={createSortHandler(headCell.id)}
               >
                 {headCell.label}
               </TableSortLabel>

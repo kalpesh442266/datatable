@@ -59,7 +59,7 @@ function DataTable() {
 
   const handleSort = (e, key) => {
     const isAsc = filter?.order === "asc";
-    getData({ ...filter, sortBy: e, order: isAsc ? "desc" : "asc" });
+    getData({ ...filter, sortBy: key, order: isAsc ? "desc" : "asc" });
   };
 
   const handleClick = (id) => {
