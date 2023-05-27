@@ -49,6 +49,7 @@ function DataTable() {
     category: "all",
     department: "all",
     page: 0,
+    limit: 10,
     search: "",
     sortBy: "",
     order: "desc",
@@ -88,7 +89,9 @@ function DataTable() {
     if (!filters) filters = defaultFilter;
     setFilter(filters);
 
-    let filterData = `?page=${filters?.page || 1}&limit=5`;
+    let filterData = `?page=${filters?.page || 1}&limit=${
+      filters?.limit || 10
+    }`;
 
     filterData += filters?.search ? `&search=${filters?.search}` : "";
 
@@ -171,13 +174,16 @@ function DataTable() {
           farmerList={farmerList}
         />
         <TablePagination
-          rowsPerPageOptions={[5]}
+          rowsPerPageOptions={[5, 10, 15, 20]}
           component="div"
           count={total}
-          rowsPerPage={5}
+          rowsPerPage={filter.limit}
           page={filter?.page}
           onPageChange={(e, page) => {
             getData({ ...filter, page: page + 1 });
+          }}
+          onRowsPerPageChange={(e, row) => {
+            getData({ ...filter, limit: e.target.value });
           }}
         />
         <Dialog
