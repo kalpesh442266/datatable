@@ -1,7 +1,14 @@
 // react
 import { useEffect, useState } from "react";
 // @mui
-import { Alert, Button, DialogActions, Grid, Snackbar } from "@mui/material";
+import {
+  Alert,
+  Box,
+  Button,
+  DialogActions,
+  Grid,
+  Snackbar,
+} from "@mui/material";
 //libs
 import { useForm } from "react-hook-form";
 import * as Yup from "yup";
@@ -100,10 +107,14 @@ export default function FarmerForm({
         .patch(`/farmers/${farmerId}`, updatedData)
         .then((resp) => {
           handleSnackbarOpen("Farmer updated successfully", "success");
-          setOpenDialogue("");
-          setFarmerId("");
-          getData();
-          setIsLoading(false);
+        })
+        .then((resp) => {
+          setTimeout(() => {
+            setOpenDialogue("");
+            setFarmerId("");
+            getData();
+            setIsLoading(false);
+          }, 1000);
         })
         .catch((error) => {
           console.log(error);
@@ -114,16 +125,17 @@ export default function FarmerForm({
       axiosInstance
         .post("/farmers", data)
         .then((resp) => {
-          console.log(resp);
-
-          reset();
           handleSnackbarOpen("Farmer added successfully", "success");
-          setOpenDialogue("");
-          getData();
-          setIsLoading(false);
+        })
+        .then((resp) => {
+          setTimeout(() => {
+            reset();
+            setOpenDialogue("");
+            getData();
+            setIsLoading(false);
+          }, 1000);
         })
         .catch((error) => {
-          console.log(error);
           handleSnackbarOpen(error.message, "error");
           setIsLoading(false);
         });
@@ -133,6 +145,7 @@ export default function FarmerForm({
   useEffect(() => {
     if (farmerId) {
       axiosInstance.get(`/farmers/${farmerId}`).then((resp) => {
+        console.log(resp.data);
         if (resp.data) {
           methods.reset({
             email: resp?.data?.email,
@@ -150,7 +163,7 @@ export default function FarmerForm({
   }, [farmerId, openDialogue]);
 
   return (
-    <>
+    <Box>
       <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
         <Grid container sx={{ pt: 1 }} spacing={2}>
           {/* {!!errors.afterSubmit && (
@@ -207,7 +220,7 @@ export default function FarmerForm({
       </FormProvider>
       <Snackbar
         open={snackbarOpen}
-        autoHideDuration={2000}
+        autoHideDuration={3000}
         onClose={handleSnackbarClose}
       >
         <Alert
@@ -218,6 +231,6 @@ export default function FarmerForm({
           {snackbarMessage}
         </Alert>
       </Snackbar>
-    </>
+    </Box>
   );
 }
