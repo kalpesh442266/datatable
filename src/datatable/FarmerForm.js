@@ -1,24 +1,31 @@
 // react
-// form
-import { useForm } from "react-hook-form";
+import { useEffect, useState } from "react";
 // @mui
 import { Alert, Button, DialogActions, Grid, Snackbar } from "@mui/material";
 //libs
-import { yupResolver } from "@hookform/resolvers/yup";
+import { useForm } from "react-hook-form";
 import * as Yup from "yup";
-import { FormProvider, RHFTextField } from "../hook-form";
-import { axiosInstance } from "../utils";
-import { useEffect, useState } from "react";
-import { Loader } from "../components";
-import axios from "axios";
+import PropTypes from "prop-types";
+import { yupResolver } from "@hookform/resolvers/yup";
 // components
+import { FormProvider, RHFTextField } from "../hook-form";
+import { Loader } from "../components";
+import { axiosInstance } from "../utils";
 // ----------------------------------------------------------------------
 
+FarmerForm.propTypes = {
+  setOpenDialogue: PropTypes.func,
+  openDialogue: PropTypes.string,
+  getData: PropTypes.func,
+  farmerId: PropTypes.string,
+  setFarmerId: PropTypes.func,
+};
 export default function FarmerForm({
   setOpenDialogue,
   openDialogue,
   getData,
   farmerId,
+  setFarmerId,
 }) {
   const [isLoading, setIsLoading] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -87,22 +94,40 @@ export default function FarmerForm({
 
   const onSubmit = (data) => {
     setIsLoading(true);
-    axiosInstance
-      .post("/farmers", data)
-      .then((resp) => {
-        console.log(resp);
+    if (farmerId) {
+      const { mobileNumber, uniqueRegNumber, ...updatedData } = data;
+      axiosInstance
+        .patch(`/farmers/${farmerId}`, updatedData)
+        .then((resp) => {
+          handleSnackbarOpen("Farmer updated successfully", "success");
+          setOpenDialogue("");
+          setFarmerId("");
+          getData();
+          setIsLoading(false);
+        })
+        .catch((error) => {
+          console.log(error);
+          handleSnackbarOpen(error.message, "error");
+          setIsLoading(false);
+        });
+    } else {
+      axiosInstance
+        .post("/farmers", data)
+        .then((resp) => {
+          console.log(resp);
 
-        reset();
-        handleSnackbarOpen("Farmer added successfully", "success");
-        setOpenDialogue(false);
-        getData();
-        setIsLoading(false);
-      })
-      .catch((error) => {
-        console.log(error);
-        handleSnackbarOpen(error.message, "error");
-        setIsLoading(false);
-      });
+          reset();
+          handleSnackbarOpen("Farmer added successfully", "success");
+          setOpenDialogue("");
+          getData();
+          setIsLoading(false);
+        })
+        .catch((error) => {
+          console.log(error);
+          handleSnackbarOpen(error.message, "error");
+          setIsLoading(false);
+        });
+    }
   };
 
   useEffect(() => {

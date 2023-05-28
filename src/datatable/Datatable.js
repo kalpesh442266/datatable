@@ -31,7 +31,6 @@ const TABLE_HEAD = [
   { id: "city", label: "City", alignRight: false, sort: true },
   { id: "state", label: "State", alignRight: false, sort: true },
   { id: "mobileNumber", label: "Mobile No.", alignRight: false, sort: true },
-  { id: "", label: "", alignRight: true },
 ];
 
 // ----------------------------------------------------------------------
@@ -44,7 +43,6 @@ function DataTable() {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
-  const [selectedForEdit, setSelectedForEdit] = useState("");
   // filter initialisation data
   const defaultFilter = {
     category: "all",
@@ -133,7 +131,16 @@ function DataTable() {
         isLoading(false);
       });
   };
-
+  const handleDelete = (selectedData) => {
+    axiosInstance
+      .delete(`/farmers?ids=${selected}`)
+      .then((resp) => {
+        handleSnackbarOpen("Data deleted successfully", "success");
+      })
+      .catch((e) => {
+        handleSnackbarOpen("e.message", "error");
+      });
+  };
   const isNotFound = !farmerList.length;
 
   return (
@@ -141,21 +148,23 @@ function DataTable() {
       <Box sx={{ overflow: "hidden" }}>
         <Paper
           sx={{
-            pb: 3,
-            paddingX: 5,
-            pt: 5,
             m: 5,
-            borderRadius: 10,
+            borderRadius: "35px",
           }}
           elevation={7}
         >
           <DataTableToolbar
-            filter={filter}
+            handleDelete={handleDelete}
+            selected={selected}
             setFilter={setFilter}
             getData={getData}
+            setSelected={setSelected}
           />
           <TableContainer
-            sx={{ maxHeight: "calc(100vh - 270px)", overflow: "auto" }}
+            sx={{
+              maxHeight: "calc(100vh - 270px)",
+              overflow: "auto",
+            }}
           >
             <Table>
               <DataTableHeader
@@ -188,7 +197,7 @@ function DataTable() {
               )}
             </Table>
           </TableContainer>
-          <Box sx={{ mt: 2 }}>
+          <Box sx={{ pt: 2, pb: 2, marginX: 5 }}>
             <TablePagination
               rowsPerPageOptions={[5, 10, 15, 20]}
               component="div"
