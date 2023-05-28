@@ -1,2 +1,1 @@
-import axiosInstance from "./axios";
-export default axiosInstance;
+export { default as axiosInstance } from "./axios";

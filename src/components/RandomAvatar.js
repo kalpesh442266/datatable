@@ -1,8 +1,9 @@
 import { Box } from "@mui/material";
 import React, { useMemo } from "react";
-import { randomNumber } from "../Constants";
 
 function RandomAvatar({ gender, height, width, sx }) {
+  const randomNumber = (maxNum) => Math.floor(Math.random() * maxNum) + 1;
+
   const imagePath = useMemo(() => {
     return gender && require(`../assets/${gender}_${randomNumber(5)}.png`);
   }, [gender]);

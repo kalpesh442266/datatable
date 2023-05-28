@@ -1,4 +1,4 @@
-import Datatable from "./datatable";
+import { Datatable } from "./datatable";
 
 function App() {
   return <Datatable />;
