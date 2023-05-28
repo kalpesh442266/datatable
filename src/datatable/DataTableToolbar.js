@@ -113,7 +113,11 @@ function DataTableToolbar({ filter, setFilter, getData }) {
           </IconButton>
         </DialogTitle>
         <DialogContent sx={{ my: 2 }}>
-          <FarmerForm setOpenDialogue={setOpenDialogue} getData={getData} />
+          <FarmerForm
+            setOpenDialogue={setOpenDialogue}
+            openDialogue={openDialogue}
+            getData={getData}
+          />
         </DialogContent>
       </Dialog>
     </Stack>

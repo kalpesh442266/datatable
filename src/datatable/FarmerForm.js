@@ -8,13 +8,18 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
 import { FormProvider, RHFTextField } from "../hook-form";
 import { axiosInstance } from "../utils";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Loader } from "../components";
 import axios from "axios";
 // components
 // ----------------------------------------------------------------------
 
-export default function FarmerForm({ setOpenDialogue, getData }) {
+export default function FarmerForm({
+  setOpenDialogue,
+  openDialogue,
+  getData,
+  farmerId,
+}) {
   const [isLoading, setIsLoading] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -68,12 +73,7 @@ export default function FarmerForm({ setOpenDialogue, getData }) {
     defaultValues,
   });
 
-  const {
-    reset,
-    handleSubmit,
-    setError,
-    formState: { errors },
-  } = methods;
+  const { reset, handleSubmit } = methods;
 
   const handleSnackbarOpen = (message, severity) => {
     setSnackbarMessage(message);
@@ -86,6 +86,7 @@ export default function FarmerForm({ setOpenDialogue, getData }) {
   };
 
   const onSubmit = (data) => {
+    setIsLoading(true);
     axiosInstance
       .post("/farmers", data)
       .then((resp) => {
@@ -95,13 +96,33 @@ export default function FarmerForm({ setOpenDialogue, getData }) {
         handleSnackbarOpen("Farmer added successfully", "success");
         setOpenDialogue(false);
         getData();
+        setIsLoading(false);
       })
       .catch((error) => {
         console.log(error);
         handleSnackbarOpen(error.message, "error");
-        //   setError("afterSubmit", error);
+        setIsLoading(false);
       });
   };
+
+  useEffect(() => {
+    if (farmerId) {
+      axiosInstance.get(`/farmers/${farmerId}`).then((resp) => {
+        if (resp.data) {
+          methods.reset({
+            email: resp?.data?.email,
+            name: resp?.data?.name,
+            uniqueRegNumber: resp?.data?.uniqueRegNumber,
+            landOwned: resp?.data?.landOwned,
+            city: resp?.data?.city,
+            state: resp?.data?.state,
+            mobileNumber: resp?.data?.mobileNumber,
+          });
+        }
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [farmerId, openDialogue]);
 
   return (
     <>
@@ -116,13 +137,21 @@ export default function FarmerForm({ setOpenDialogue, getData }) {
           </Grid>
 
           <Grid item xs={6}>
-            <RHFTextField name="uniqueRegNumber" label="UID" />
+            <RHFTextField
+              disabled={!!farmerId}
+              name="uniqueRegNumber"
+              label="UID"
+            />
           </Grid>
           <Grid item xs={6}>
             <RHFTextField name="email" label="Email" />
           </Grid>
           <Grid item xs={6}>
-            <RHFTextField name="mobileNumber" label="Mobile Number" />
+            <RHFTextField
+              disabled={farmerId}
+              name="mobileNumber"
+              label="Mobile Number"
+            />
           </Grid>
           <Grid item xs={4}>
             <RHFTextField name="landOwned" label="Land (ha)" />
@@ -140,9 +169,13 @@ export default function FarmerForm({ setOpenDialogue, getData }) {
               variant="contained"
               sx={{ mr: 1 }}
               disabled={isLoading}
-              startIcon={isLoading && <Loader size={20} />}
+              startIcon={
+                isLoading && (
+                  <Loader style={{ align: "center", height: 30, width: 80 }} />
+                )
+              }
             >
-              Submit
+              {isLoading ? "" : "Submit"}
             </Button>
           </DialogActions>
         </Grid>

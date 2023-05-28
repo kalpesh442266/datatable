@@ -3,18 +3,23 @@ import { useEffect, useState } from "react";
 
 // @mui
 import {
+  Alert,
   Box,
   Paper,
+  Snackbar,
   Table,
+  TableBody,
+  TableCell,
   TableContainer,
   TablePagination,
+  TableRow,
 } from "@mui/material";
 
 // components
 import DataTableBody from "./DataTableBody";
 import DataTableHeader from "./DataTableHeader";
 import DataTableToolbar from "./DataTableToolbar";
-import { Page } from "../components";
+import { Loader, Page } from "../components";
 import { axiosInstance } from "../utils";
 // ----------------------------------------------------------------------
 
@@ -26,6 +31,7 @@ const TABLE_HEAD = [
   { id: "city", label: "City", alignRight: false, sort: true },
   { id: "state", label: "State", alignRight: false, sort: true },
   { id: "mobileNumber", label: "Mobile No.", alignRight: false, sort: true },
+  { id: "", label: "", alignRight: true },
 ];
 
 // ----------------------------------------------------------------------
@@ -34,7 +40,11 @@ function DataTable() {
   const [farmerList, setFarmerList] = useState([]);
   const [total, setTotal] = useState();
   const [selected, setSelected] = useState([]);
-
+  const [isLoading, setIsLoading] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+  const [selectedForEdit, setSelectedForEdit] = useState("");
   // filter initialisation data
   const defaultFilter = {
     category: "all",
@@ -46,9 +56,17 @@ function DataTable() {
     order: "desc",
     unassigned: true,
   };
-
   const [filter, setFilter] = useState(defaultFilter);
 
+  const handleSnackbarOpen = (message, severity) => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setSnackbarOpen(true);
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+  };
   const handleSort = (e, key) => {
     const isAsc = filter?.order === "asc";
     getData({ ...filter, sortBy: key, order: isAsc ? "desc" : "asc" });
@@ -87,6 +105,7 @@ function DataTable() {
   }, []);
 
   const getData = (filters) => {
+    setIsLoading(true);
     if (!filters) filters = defaultFilter;
     setFilter(filters);
 
@@ -101,11 +120,18 @@ function DataTable() {
         ? `&sortBy=${filters?.sortBy}&order=${filters.order === "asc" ? -1 : 1}`
         : "";
 
-    axiosInstance.get(`/farmers${filterData}`).then((response) => {
-      setFarmerList(response.data.data);
-      setFilter({ ...filters, page: response.data.page - 1 });
-      setTotal(response.data.total);
-    });
+    axiosInstance
+      .get(`/farmers${filterData}`)
+      .then((response) => {
+        setFarmerList(response.data.data);
+        setFilter({ ...filters, page: response.data.page - 1 });
+        setTotal(response.data.total);
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        handleSnackbarOpen(error.message, "error");
+        isLoading(false);
+      });
   };
 
   const isNotFound = !farmerList.length;
@@ -140,16 +166,26 @@ function DataTable() {
                 handleSort={handleSort}
                 headLabel={TABLE_HEAD}
               />
-              <DataTableBody
-                handleSelectAllClick={handleSelectAllClick}
-                isNotFound={isNotFound}
-                filter={filter}
-                handleSort={handleSort}
-                TABLE_HEAD={TABLE_HEAD}
-                handleSelected={handleSelected}
-                selected={selected}
-                farmerList={farmerList}
-              />
+              {isLoading ? (
+                <TableBody>
+                  <TableRow>
+                    <TableCell align="center" colSpan={8} sx={{ py: 3 }}>
+                      <Loader style={{ align: "center", height: 100 }} />
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              ) : (
+                <DataTableBody
+                  handleSelectAllClick={handleSelectAllClick}
+                  isNotFound={isNotFound}
+                  filter={filter}
+                  handleSort={handleSort}
+                  TABLE_HEAD={TABLE_HEAD}
+                  handleSelected={handleSelected}
+                  selected={selected}
+                  farmerList={farmerList}
+                />
+              )}
             </Table>
           </TableContainer>
           <Box sx={{ mt: 2 }}>
@@ -170,6 +206,19 @@ function DataTable() {
           </Box>
         </Paper>
       </Box>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={2000}
+        onClose={handleSnackbarClose}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbarSeverity}
+          sx={{ width: "100%" }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Page>
   );
 }
