@@ -19,6 +19,7 @@ export default function RHFTextField({ name, onChangeHandler, ...other }) {
       control={control}
       render={({ field, fieldState: { error } }) => (
         <TextField
+          size="small"
           {...field}
           fullWidth
           error={!!error}

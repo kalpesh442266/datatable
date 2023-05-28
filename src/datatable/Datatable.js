@@ -4,29 +4,21 @@ import { useEffect, useState } from "react";
 // @mui
 import {
   Box,
-  Button,
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  IconButton,
   Paper,
-  Stack,
+  Table,
+  TableContainer,
   TablePagination,
-  TextField,
-  Typography,
 } from "@mui/material";
 
-// icons
-import CloseIcon from "@mui/icons-material/Close";
-import HighlightOffIcon from "@mui/icons-material/HighlightOff";
-
 // components
-import axiosInstance from "../utils";
-import FarmersTable from "./FarmersTable";
+import DataTableBody from "./DataTableBody";
+import DataTableHeader from "./DataTableHeader";
+import DataTableToolbar from "./DataTableToolbar";
+import { Page } from "../components";
+import { axiosInstance } from "../utils";
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
-  { id: "", label: "", alignRight: false },
   { id: "name", label: "Name", alignRight: false, sort: true },
   { id: "uniqueRegNumber", label: "UID", alignRight: false, sort: true },
   { id: "landOwned", label: "Land (ha)", alignRight: false, sort: true },
@@ -41,7 +33,6 @@ const TABLE_HEAD = [
 function DataTable() {
   const [farmerList, setFarmerList] = useState([]);
   const [total, setTotal] = useState();
-  const [openDialogue, setOpenDialogue] = useState();
   const [selected, setSelected] = useState([]);
 
   // filter initialisation data
@@ -63,7 +54,16 @@ function DataTable() {
     getData({ ...filter, sortBy: key, order: isAsc ? "desc" : "asc" });
   };
 
-  const handleClick = (id) => {
+  const handleSelectAllClick = (e) => {
+    if (e.target.checked) {
+      const newSelecteds = farmerList.map((n) => n._id);
+      setSelected(newSelecteds);
+      return;
+    }
+    setSelected([]);
+  };
+
+  const handleSelected = (id) => {
     const selectedIndex = selected.indexOf(id);
     let newSelected = [];
     if (selectedIndex === -1) {
@@ -80,6 +80,7 @@ function DataTable() {
     }
     setSelected(newSelected);
   };
+
   useEffect(() => {
     getData(defaultFilter);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -110,102 +111,66 @@ function DataTable() {
   const isNotFound = !farmerList.length;
 
   return (
-    <Box sx={{ overflow: "hidden" }}>
-      <Paper
-        sx={{
-          p: 5,
-          m: 5,
-          borderRadius: 10,
-        }}
-        elevation={7}
-      >
-        <Stack
-          direction="row"
-          alignItems="center"
-          justifyContent="space-between"
-          spacing={2}
-          sx={{ mb: 2 }}
-        >
-          <Typography variant="h6" fontWeight="bold">
-            Farmers
-          </Typography>
-          <Stack spacing={2} direction="row">
-            <TextField
-              size="small"
-              label="Search..."
-              value={filter?.search}
-              onChange={(e) => {
-                setFilter({ ...filter, search: e.target.value });
-              }}
-              InputProps={{
-                startAdornment: filter?.search && (
-                  <IconButton
-                    onClick={() => {
-                      getData({ ...filter, search: "" });
-                    }}
-                  >
-                    <HighlightOffIcon />
-                  </IconButton>
-                ),
-                endAdornment: (
-                  <Button
-                    size="small"
-                    onClick={() => {
-                      getData(filter);
-                    }}
-                    position="start"
-                    variant="contained"
-                  >
-                    Search
-                  </Button>
-                ),
-              }}
-              sx={{ width: "320px", "& .MuiOutlinedInput-root": { pr: 0.5 } }}
-            />
-          </Stack>
-        </Stack>
-        <FarmersTable
-          isNotFound={isNotFound}
-          filter={filter}
-          handleSort={handleSort}
-          TABLE_HEAD={TABLE_HEAD}
-          handleClick={handleClick}
-          selected={selected}
-          farmerList={farmerList}
-        />
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 15, 20]}
-          component="div"
-          count={total}
-          rowsPerPage={filter.limit}
-          page={filter?.page}
-          onPageChange={(e, page) => {
-            getData({ ...filter, page: page + 1 });
+    <Page title="Supra Assign ment">
+      <Box sx={{ overflow: "hidden" }}>
+        <Paper
+          sx={{
+            pb: 3,
+            paddingX: 5,
+            pt: 5,
+            m: 5,
+            borderRadius: 10,
           }}
-          onRowsPerPageChange={(e, row) => {
-            getData({ ...filter, limit: e.target.value });
-          }}
-        />
-        <Dialog
-          open={openDialogue}
-          keepMounted
-          onClose={() => setOpenDialogue(false)}
-          aria-describedby="form"
+          elevation={7}
         >
-          <DialogTitle
-            display="flex"
-            justifyContent="space-between"
-            alignItems="center"
+          <DataTableToolbar
+            filter={filter}
+            setFilter={setFilter}
+            getData={getData}
+          />
+          <TableContainer
+            sx={{ maxHeight: "calc(100vh - 270px)", overflow: "auto" }}
           >
-            <Box>Please select a category</Box>
-            <IconButton onClick={() => setOpenDialogue(false)}>
-              <CloseIcon />
-            </IconButton>
-          </DialogTitle>
-          <DialogContent sx={{ my: 2 }}></DialogContent>
-        </Dialog>
-      </Paper>
-    </Box>
+            <Table>
+              <DataTableHeader
+                handleSelectAllClick={handleSelectAllClick}
+                filter={filter}
+                rowCount={farmerList.length}
+                numSelected={selected.length}
+                handleSort={handleSort}
+                headLabel={TABLE_HEAD}
+              />
+              <DataTableBody
+                handleSelectAllClick={handleSelectAllClick}
+                isNotFound={isNotFound}
+                filter={filter}
+                handleSort={handleSort}
+                TABLE_HEAD={TABLE_HEAD}
+                handleSelected={handleSelected}
+                selected={selected}
+                farmerList={farmerList}
+              />
+            </Table>
+          </TableContainer>
+          <Box sx={{ mt: 2 }}>
+            <TablePagination
+              rowsPerPageOptions={[5, 10, 15, 20]}
+              component="div"
+              count={total}
+              rowsPerPage={filter.limit}
+              page={filter?.page}
+              onPageChange={(e, page) => {
+                setSelected([]);
+                getData({ ...filter, page: page + 1 });
+              }}
+              onRowsPerPageChange={(e, row) => {
+                getData({ ...filter, limit: e.target.value });
+              }}
+            />
+          </Box>
+        </Paper>
+      </Box>
+    </Page>
   );
 }
 

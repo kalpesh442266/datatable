@@ -1,6 +1,7 @@
 import PropTypes from "prop-types";
 // @mui
 import {
+  Checkbox,
   TableCell,
   TableHead,
   TableRow,
@@ -10,11 +11,23 @@ import {
 
 // ----------------------------------------------------------------------
 
-TableToolbar.propTypes = {
+DataTableHeader.propTypes = {
   headLabel: PropTypes.array,
+  handleSort: PropTypes.func,
+  filter: PropTypes.object,
+  handleSelectAllClick: PropTypes.func,
+  rowCount: PropTypes.number,
+  numSelected: PropTypes.number,
 };
 
-export default function TableToolbar({ headLabel, handleSort, filter }) {
+export default function DataTableHeader({
+  headLabel,
+  handleSort,
+  filter,
+  handleSelectAllClick,
+  rowCount,
+  numSelected,
+}) {
   const theme = useTheme();
 
   const createSortHandler = (property) => (event) => {
@@ -24,6 +37,13 @@ export default function TableToolbar({ headLabel, handleSort, filter }) {
   return (
     <TableHead sx={{ position: "sticky", top: 0, zIndex: 1 }}>
       <TableRow sx={{ backgroundColor: theme.palette.grey[200] }}>
+        <TableCell padding="checkbox">
+          <Checkbox
+            indeterminate={numSelected > 0 && numSelected < rowCount}
+            checked={rowCount > 0 && numSelected === rowCount}
+            onChange={handleSelectAllClick}
+          />
+        </TableCell>
         {headLabel.map((headCell) => (
           <TableCell
             key={headCell.id}
