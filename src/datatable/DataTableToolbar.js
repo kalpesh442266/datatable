@@ -57,11 +57,11 @@ function DataTableToolbar({
     setSearchTerm(event.target.value);
   };
 
-  const handleDeleteData = (selected) => {
-    handleDelete(selected);
-    getData();
+  const handleDeleteData = async (selected) => {
+    await handleDelete(selected);
     setSelected([]);
     setOpenDialogue("");
+    getData();
   };
 
   const handleEdit = (id) => {
@@ -139,7 +139,6 @@ function DataTableToolbar({
                 startAdornment: searchTerm && (
                   <IconButton
                     onClick={() => {
-                      getData({ ...filter, search: "" });
                       setSearchTerm("");
                     }}
                   >
