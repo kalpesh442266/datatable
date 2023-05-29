@@ -128,7 +128,7 @@ function DataTable() {
       })
       .catch((error) => {
         handleSnackbarOpen(error.message, "error");
-        isLoading(false);
+        setIsLoading(false);
       });
   };
   const handleDelete = (selectedData) => {

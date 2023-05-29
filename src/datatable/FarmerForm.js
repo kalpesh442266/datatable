@@ -106,7 +106,7 @@ export default function FarmerForm({
           setIsLoading(false);
         })
         .catch((error) => {
-          console.log(error);
+          console.error(error);
           handleSnackbarOpen(error.message, "error");
           setIsLoading(false);
         });
@@ -114,8 +114,6 @@ export default function FarmerForm({
       axiosInstance
         .post("/farmers", data)
         .then((resp) => {
-          console.log(resp);
-
           reset();
           handleSnackbarOpen("Farmer added successfully", "success");
           setOpenDialogue("");
@@ -123,7 +121,7 @@ export default function FarmerForm({
           setIsLoading(false);
         })
         .catch((error) => {
-          console.log(error);
+          console.error(error);
           handleSnackbarOpen(error.message, "error");
           setIsLoading(false);
         });
@@ -153,10 +151,6 @@ export default function FarmerForm({
     <>
       <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
         <Grid container sx={{ pt: 1 }} spacing={2}>
-          {/* {!!errors.afterSubmit && (
-            <Alert severity="error">{errors.afterSubmit.message}&nbsp;</Alert>
-          )} */}
-
           <Grid item xs={6}>
             <RHFTextField name="name" label="Full name" />
           </Grid>
