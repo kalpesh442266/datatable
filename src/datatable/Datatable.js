@@ -16,11 +16,11 @@ import {
 } from "@mui/material";
 
 // components
+import { Loader, Page } from "../components";
+import { axiosInstance } from "../utils";
 import DataTableBody from "./DataTableBody";
 import DataTableHeader from "./DataTableHeader";
 import DataTableToolbar from "./DataTableToolbar";
-import { Loader, Page } from "../components";
-import { axiosInstance } from "../utils";
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
@@ -39,9 +39,11 @@ function DataTable() {
   const [farmerList, setFarmerList] = useState([]);
   const [total, setTotal] = useState();
   const [selected, setSelected] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   // filter initialisation data
   const defaultFilter = {
@@ -98,9 +100,15 @@ function DataTable() {
   };
 
   useEffect(() => {
-    getData(defaultFilter);
+    const debounceTimer = setTimeout(() => {
+      getData({ ...filter, search: searchTerm });
+    }, 700); // Adjust the debounce delay as needed (e.g., 500ms)
+
+    return () => {
+      clearTimeout(debounceTimer);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [searchTerm]);
 
   const getData = (filters) => {
     setIsLoading(true);
@@ -159,6 +167,8 @@ function DataTable() {
             setFilter={setFilter}
             getData={getData}
             setSelected={setSelected}
+            setSearchTerm={setSearchTerm}
+            searchTerm={searchTerm}
           />
           <TableContainer
             sx={{

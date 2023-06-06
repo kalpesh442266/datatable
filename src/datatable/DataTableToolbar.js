@@ -1,5 +1,5 @@
 // react
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 // @mui
 import {
   Button,
@@ -37,21 +37,11 @@ function DataTableToolbar({
   selected,
   handleDelete,
   setSelected,
+  setSearchTerm,
+  searchTerm,
 }) {
-  const [searchTerm, setSearchTerm] = useState("");
   const [openDialogue, setOpenDialogue] = useState("");
   const [editSelected, setEditSelected] = useState();
-
-  useEffect(() => {
-    const debounceTimer = setTimeout(() => {
-      getData({ ...filter, search: searchTerm });
-    }, 700); // Adjust the debounce delay as needed (e.g., 500ms)
-
-    return () => {
-      clearTimeout(debounceTimer);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchTerm]);
 
   const handleSearchInputChange = (event) => {
     setSearchTerm(event.target.value);
